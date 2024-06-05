@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 import os
 import psycopg2 
@@ -33,14 +32,15 @@ def convert_category(category: str):
     
     return getCategoryId(category)
 
-def convert_date(date: str):
-    [dd, mm, yyyy] = date.split('/')
-    return '-'.join([yyyy, mm, dd])
+def convert_datetime(datetime: str):
+    [d, t, _] = datetime.split(' ')
+    [dd, mm, yyyy] = d.split('/')
+    return '-'.join([yyyy, mm, dd]) + ' ' + t + ':00'
 
 def apply_convert(_df: pd.DataFrame):
     df = _df.copy()
     df['Categorical'] = df['Categorical'].apply(convert_category)
-    df['Date'] = df['Date'].apply(convert_date)
+    df['Date'] = df['Date'].apply(convert_datetime)
     return df.reset_index().drop(columns='index', axis=1)
 
 def import_db(data: pd.DataFrame):
