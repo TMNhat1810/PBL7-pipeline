@@ -1,1 +1,0 @@
-from .batch_predict import get_new_data, predict
