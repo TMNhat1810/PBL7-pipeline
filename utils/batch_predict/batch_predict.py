@@ -10,9 +10,9 @@ def get_new_data():
     
     return data[['Title', 'Content', 'Summary', 'Date', 'Url', 'Categorical_x']].rename(columns={'Categorical_x': 'Categorical'})
 
-def predict(_df: pd.DataFrame): 
+def predict(_df: pd.DataFrame, version): 
     bp = _df[['Categorical', 'Date', 'Url']].copy()
     # bp['Pred'] = df['Content'].apply(summarizer_wrapper)
-    bp['Pred'] = get_summary(_df['Content'].to_list())
+    bp['Pred'] = get_summary(_df['Content'].to_list(), version)
     
     return bp

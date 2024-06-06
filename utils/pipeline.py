@@ -5,7 +5,7 @@ from .import_db import apply_convert, import_db, back_up_data
 import datetime
 import uuid
 
-def start_pipeline(crawl_until_date: datetime.date):
+def start_pipeline(crawl_until_date: datetime.date, using_version: str):
     vtv_crawl('social', crawl_until_date)
     vtv_crawl('eco', crawl_until_date)
     tuoitre_crawl()
@@ -13,7 +13,7 @@ def start_pipeline(crawl_until_date: datetime.date):
     print('crawl completed, process to batch predict')
     
     new_data = get_new_data()
-    preds = predict(new_data)
+    preds = predict(new_data, using_version)
     print('batch predict completed, importing data to db')
     
     import_data = apply_convert(preds)

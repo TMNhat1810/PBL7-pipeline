@@ -1,1 +1,1 @@
-from .model import summarizer_wrapper, get_summary
+from .model import get_model, get_summary
