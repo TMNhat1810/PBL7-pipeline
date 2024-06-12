@@ -41,3 +41,20 @@ def change_version(version):
         cur.close()
         return True
     except: return False
+    
+def get_all_version():
+    cur = connection.cursor()
+
+    try: 
+        cur.execute('''
+                SELECT * from "PBL7".model_version
+                ''')
+    
+        connection.commit() 
+    except: pass
+    
+    data = cur.fetchall()
+    cur.close()
+    
+    if data == None: return None
+    return data

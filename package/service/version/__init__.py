@@ -1,1 +1,1 @@
-from .model import get_version, change_version
+from .model import get_version, change_version, get_all_version
