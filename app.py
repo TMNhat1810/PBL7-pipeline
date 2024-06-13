@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS, cross_origin
 from package.service.version import get_version, change_version, get_all_version
 from package.service.play_ground import summarizer_available, summarizer_wrapper, load_summarizer
-from package.utils.import_db.db import get_version_data, import_version_data
+from package.utils.import_db.db import get_version_data, import_version_data, export_feedback_data
 # from package.utils.pipeline import start_pipeline
 # from datetime import date
 # import threading
@@ -26,7 +26,7 @@ def root():
 def change_model_version():
     version = request.json['version']
     status = change_version(version)
-    
+    load_summarizer()
     if status: return jsonify(success=True, message="version changed successully")
     return jsonify(success=False, message="Internal Server Error")
 
@@ -55,6 +55,14 @@ def reload():
     import_version_data(new_version)
     
     return jsonify(success=True)
+
+@app.route('/export')
+@cross_origin()
+def export_csv():
+    try:
+        export_feedback_data()
+        return jsonify(success=True)
+    except: return jsonify(success=False, message="Internal Server Error")
     
 load_summarizer()
 

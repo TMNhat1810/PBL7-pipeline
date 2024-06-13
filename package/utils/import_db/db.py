@@ -47,16 +47,16 @@ def import_db(data: pd.DataFrame):
 
     cur = connection.cursor()
     
-    try:
-        cur.execute('''
-                    COPY "PBL7".news("categoryId", "date", "url", "summary", "id") 
-                    FROM '{}'
-                    DELIMITER ','
-                    CSV HEADER;
-                    '''.format(path_to_csv))
-        
-        connection.commit()
-    except: pass
+    # try:
+    cur.execute('''
+                COPY "PBL7".news("categoryId", "date", "url", "summary", "title", "orgSummary", "modelVersion", "id") 
+                FROM '{}'
+                DELIMITER ','
+                CSV HEADER;
+                '''.format(path_to_csv))
+    
+    connection.commit()
+    # except: pass
     
     cur.close()
 
@@ -89,17 +89,52 @@ def import_version_data(data: pd.DataFrame):
 
     cur = connection.cursor()
 
-    try: 
-        cur.execute('''
-                COPY "PBL7".model_version("name", "date", "rouge1", "rouge2", "rougeL", "id") 
-                FROM '{}'
-                DELIMITER ','
-                CSV HEADER;
-                '''.format(path_to_csv))
-    
-        connection.commit()
-        data.to_csv('cache/version_data.csv', index=False, header=False, mode='a')
+    # try: 
+    cur.execute('''
+            COPY "PBL7".model_version("name", "date", "rouge1", "rouge2", "rougeL", "id") 
+            FROM '{}'
+            DELIMITER ','
+            CSV HEADER;
+            '''.format(path_to_csv))
+
+    connection.commit()
+    data.to_csv('cache/version_data.csv', index=False, header=False, mode='a')
         
-    except: pass
+    # except: pass
     
     cur.close()
+    
+def get_feedbacks_data():
+    cur = connection.cursor()
+    
+    cur.execute('''
+                SELECT feedback.content, news.url, news.title FROM "PBL7".feedback INNER JOIN "PBL7".news
+                ON feedback."newsId"=news.id
+                WHERE feedback.status='APPROVED'
+                ORDER BY feedback."createdAt" ASC 
+                ''')
+    
+    data = cur.fetchall()
+    
+    cur.close()
+    return data
+
+def export_feedback_data():
+    data = get_feedbacks_data()
+    feedbacks = []
+    urls = []
+    titles = []
+
+    for fb in data:
+        feedback_content, url, title = fb
+        feedbacks.append(feedback_content)
+        urls.append(url)
+        titles.append(title)
+    
+    df = pd.DataFrame({'Summary': feedbacks, 'Url': urls, 'Title': titles})
+    all_data = pd.read_csv('data/news.csv')
+    export_data = df.merge(all_data, on=['Title', 'Url']).drop(columns='Summary_y')
+    export_data = export_data.dropna().drop_duplicates()
+    export_data.rename(columns={'Summary_x': 'Summary'}, inplace=True)
+    export_data[['Title', 'Content', 'Summary', 'Date', 'Url', 'Categorical']].to_csv(
+        'data/feedback' + datetime.datetime.now().strftime('_%m-%d-%Y_%H-%M-%S') + '.csv', index=False)
